@@ -3,7 +3,6 @@ import { Header } from './components/Header';
 import { CategoryNav } from './components/CategoryNav';
 import { VideoGrid } from './components/VideoGrid';
 import { VideoPlayer } from './components/VideoPlayer';
-import { ChannelPanel } from './components/ChannelPanel';
 import { PlaylistPanel, type PlaylistContext } from './components/PlaylistPanel';
 import { HistoryPanel } from './components/HistoryPanel';
 import { FavoritesPanel } from './components/FavoritesPanel';
@@ -257,8 +256,6 @@ function App() {
   } = useSettings();
   const {
     subscriptions,
-    toggleSubscription,
-    isSubscribed,
     unsubscribe,
     clearSubscriptions,
   } = useSubscriptions();
@@ -273,7 +270,6 @@ function App() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [selectedVideo, setSelectedVideo] = useState<BiliVideo | null>(null);
-  const [selectedChannel, setSelectedChannel] = useState<BiliVideo['owner'] | null>(null);
   const [showPlaylistPanel, setShowPlaylistPanel] = useState(false);
   const [showHistoryPanel, setShowHistoryPanel] = useState(false);
   const [showFavoritesPanel, setShowFavoritesPanel] = useState(false);
@@ -610,7 +606,6 @@ function App() {
               videos={videos}
               loading={false}
               onVideoSelect={setSelectedVideo}
-              onChannelSelect={setSelectedChannel}
               onFavorite={toggleFavorite}
               isFavorited={isFavorited}
               translateTitles={settings.translateTitles}
@@ -760,7 +755,6 @@ function App() {
           onAddToPlaylist={(video) => {
             setVideoToAdd(video);
           }}
-          onChannelSelect={setSelectedChannel}
           onWatched={addToHistory}
           onProgress={(video, progress) => updateProgress(video.bvid, progress)}
           onFavorite={toggleFavorite}
@@ -839,10 +833,6 @@ function App() {
             setSelectedVideo(video);
             setShowSubscriptionsPanel(false);
           }}
-          onChannelSelect={(channel) => {
-            setSelectedChannel(channel);
-            setShowSubscriptionsPanel(false);
-          }}
           onUnsubscribe={unsubscribe}
           onClear={clearSubscriptions}
           onClose={() => setShowSubscriptionsPanel(false)}
@@ -863,22 +853,6 @@ function App() {
             setShowPlaylistPanel(false);
           }}
           onClose={() => setShowPlaylistPanel(false)}
-        />
-      )}
-
-      {/* Channel Panel */}
-      {selectedChannel && (
-        <ChannelPanel
-          owner={selectedChannel}
-          onClose={() => setSelectedChannel(null)}
-          onVideoSelect={(video) => {
-            setSelectedVideo(video);
-            setSelectedChannel(null);
-          }}
-          isSubscribed={isSubscribed(selectedChannel.mid)}
-          onToggleSubscription={() => toggleSubscription(selectedChannel)}
-          translateTitles={settings.translateTitles}
-          translateChannelNames={settings.translateChannelNames}
         />
       )}
 

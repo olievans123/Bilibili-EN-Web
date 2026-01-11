@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { BiliVideo } from '../types/bilibili';
 import type { Subscription } from '../services/subscriptions';
-import { getChannelVideos, formatDuration, formatViewCount } from '../services/bilibili';
+import { getChannelVideos, getChannelUrl, formatDuration, formatViewCount } from '../services/bilibili';
 
 function proxyImageUrl(url: string): string {
   if (!url) return '';
@@ -25,7 +25,6 @@ function formatTimeAgo(timestamp: number): string {
 interface SubscriptionsPanelProps {
   subscriptions: Subscription[];
   onVideoSelect: (video: BiliVideo) => void;
-  onChannelSelect: (channel: { mid: number; name: string; face: string }) => void;
   onUnsubscribe: (mid: number) => void;
   onClear: () => void;
   onClose: () => void;
@@ -36,7 +35,6 @@ type ViewMode = 'channels' | 'feed';
 export function SubscriptionsPanel({
   subscriptions,
   onVideoSelect,
-  onChannelSelect,
   onUnsubscribe,
   onClear,
   onClose,
@@ -261,7 +259,7 @@ export function SubscriptionsPanel({
                   transition: 'background 0.2s',
                   position: 'relative',
                 }}
-                onClick={() => onChannelSelect(sub)}
+                onClick={() => window.open(getChannelUrl(sub.mid), '_blank')}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)';
                 }}
