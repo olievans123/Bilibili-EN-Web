@@ -1,15 +1,7 @@
-import { fetch as tauriFetch } from '@tauri-apps/plugin-http';
-
 const MAX_CACHE_SIZE = 500;
 const TRANSLATE_CACHE = new Map<string, string>();
 const TRANSLATE_API = 'https://translate.googleapis.com';
-const TRANSLATE_PROXY = (import.meta.env.VITE_TRANSLATE_PROXY_BASE as string | undefined)?.replace(/\/$/, '')
-  || '/api/translate';
-// Check isTauri dynamically (Tauri 2.0 uses __TAURI_INTERNALS__)
-function checkIsTauri(): boolean {
-  return typeof window !== 'undefined'
-    && Boolean((window as unknown as { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__);
-}
+const TRANSLATE_PROXY = '/api/translate';
 
 // Evict oldest entries when cache exceeds max size
 function cacheSet(key: string, value: string): void {
@@ -23,23 +15,10 @@ function cacheSet(key: string, value: string): void {
   TRANSLATE_CACHE.set(key, value);
 }
 
-// Use Vite proxy in dev mode, Tauri fetch in production
+// Always use proxy in web mode
 async function translateFetch(url: string): Promise<Response> {
-  const isDev = import.meta.env.DEV;
-  const useProxy = isDev || Boolean(import.meta.env.VITE_TRANSLATE_PROXY_BASE);
-  const canUseWindowFetch = typeof window !== 'undefined' && !checkIsTauri();
-
-  if (useProxy || canUseWindowFetch) {
-    const targetUrl = useProxy ? url.replace(TRANSLATE_API, TRANSLATE_PROXY) : url;
-    return window.fetch(targetUrl);
-  }
-
-  return tauriFetch(url, {
-    method: 'GET',
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-    },
-  });
+  const targetUrl = url.replace(TRANSLATE_API, TRANSLATE_PROXY);
+  return window.fetch(targetUrl);
 }
 
 export async function translateToEnglish(text: string): Promise<string> {

@@ -47,51 +47,17 @@ type WbiKeys = {
   fetchedAt: number;
 };
 
-// Use Vite proxy in dev mode (more reliable), Tauri fetch in production
+// Use proxy for all web requests (Vercel Edge Functions handle CORS)
 async function apiFetch(url: string, options: RequestInit = {}): Promise<Response> {
   const proxyUrl = url.startsWith(API_BASE) ? url.replace(API_BASE, PROXY_API_BASE) : url;
-  const isDev = import.meta.env.DEV;
-  const useProxy = isDev || Boolean(import.meta.env.VITE_BILI_PROXY_BASE);
 
-  if (checkIsTauri()) {
-    console.log('[API] Using Tauri fetch:', url);
-    try {
-      const response = await tauriFetch(url, options);
-      console.log('[API] Tauri fetch success:', response.status, response.statusText);
-      return response;
-    } catch (error) {
-      console.error('[API] Tauri fetch error:', error);
-      // Store error for debugging
-      if (typeof window !== 'undefined') {
-        (window as unknown as Record<string, unknown>).lastTauriFetchError = {
-          url,
-          error: error instanceof Error ? error.message : String(error),
-          stack: error instanceof Error ? error.stack : undefined,
-          timestamp: new Date().toISOString(),
-        };
-      }
-      throw error;
-    }
-  }
-
-  if (useProxy) {
-    // In development, use Vite proxy which handles CORS and headers correctly
-    console.log('[API] Using Vite proxy:', proxyUrl);
-    const headers = new Headers(options.headers || {});
-    if (!headers.has('Accept')) {
-      headers.set('Accept', 'application/json');
-    }
-    return window.fetch(proxyUrl, {
-      ...options,
-      headers,
-    });
-  }
-
+  // Always use proxy in web mode (not Tauri)
+  console.log('[API] Using proxy:', proxyUrl);
   const headers = new Headers(options.headers || {});
   if (!headers.has('Accept')) {
     headers.set('Accept', 'application/json');
   }
-  return window.fetch(url, {
+  return window.fetch(proxyUrl, {
     ...options,
     headers,
   });

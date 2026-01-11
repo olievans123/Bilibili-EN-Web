@@ -284,10 +284,8 @@ function App() {
   const feedKeyRef = useRef('home');
   const pendingCountRef = useRef(0);
   const [initialLoad, setInitialLoad] = useState(true);
-  const isTauri = typeof window !== 'undefined'
-    && Boolean((window as unknown as { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__);
-  const hasApiProxy = Boolean(import.meta.env.DEV || import.meta.env.VITE_BILI_PROXY_BASE);
-  const showProxyNotice = !isTauri && !hasApiProxy;
+  // Web version always has proxy via Vercel Edge Functions
+  const showProxyNotice = false;
 
   const beginLoad = useCallback((feedKey: string, reset: boolean) => {
     if (reset || feedKeyRef.current !== feedKey) {
@@ -652,7 +650,7 @@ function App() {
             </svg>
             <p style={{ fontSize: '16px', marginBottom: '8px' }}>No videos found</p>
             <p style={{ fontSize: '14px', marginBottom: '16px' }}>Try a different search or category</p>
-            {isTauri && (
+            {false && (
               <div style={{ marginTop: '16px' }}>
                 <button
                   onClick={async () => {
