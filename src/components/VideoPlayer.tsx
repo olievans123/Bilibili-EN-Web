@@ -495,6 +495,32 @@ export function VideoPlayer({ video, onClose, onAddToPlaylist, onChannelSelect, 
               Share
             </button>
 
+            {/* Desktop app link */}
+            <a
+              href="https://github.com/olievans123/Bilibili-EN/releases/latest"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                background: 'rgba(34, 197, 94, 0.2)',
+                border: '1px solid rgba(34, 197, 94, 0.4)',
+                borderRadius: '8px',
+                padding: '8px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                color: '#22c55e',
+                fontSize: '13px',
+                fontWeight: 500,
+                textDecoration: 'none',
+              }}
+              title="Download desktop app for more features"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+              </svg>
+              Get Desktop App
+            </a>
+
           </div>
         </div>
       )}
