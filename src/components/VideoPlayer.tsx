@@ -319,12 +319,15 @@ export function VideoPlayer({ video, onClose, onAddToPlaylist, onWatched, onFavo
         setNextCursor(result.nextCursor);
         setCommentsRequireLogin(result.requiresLogin ?? false);
         setLoadingComments(false);
-        // Restore scroll position after state update
-        requestAnimationFrame(() => {
+        // Restore scroll position after state update (multiple attempts for reliability)
+        const restoreScroll = () => {
           if (mainContentRef.current) {
             mainContentRef.current.scrollTop = scrollTop;
           }
-        });
+        };
+        requestAnimationFrame(restoreScroll);
+        setTimeout(restoreScroll, 50);
+        setTimeout(restoreScroll, 150);
       } else {
         // Append mode - add new comments
         console.log('[Comments] Append mode: got', result.comments.length, 'comments from API');
