@@ -493,7 +493,7 @@ export async function getTrending(pageNum: number = 1): Promise<BiliTrendingResu
       videos,
       page: pageNum,
       pageSize,
-      hasMore: videos.length === pageSize,
+      hasMore: !data.data.no_more,
     };
   } catch (error) {
     const errorMsg = `Error fetching trending: ${error instanceof Error ? error.message : String(error)}`;
