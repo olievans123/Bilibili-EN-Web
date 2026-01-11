@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback, useRef, type ReactNode } from 'react'
 import type { BiliVideo, BiliComment } from '../types/bilibili';
 import type { PlaylistContext } from './PlaylistPanel';
 import { getVideoComments, getVideoUrl, getRelatedVideos, formatDuration } from '../services/bilibili';
-import { downloadVideo, type DownloadProgress, getAvailableQualities, type VideoQuality } from '../services/download';
 import { translateToEnglish } from '../services/translate';
 
 // Proxy Bilibili image URLs in dev mode
@@ -57,11 +56,6 @@ export function VideoPlayer({ video, onClose, onAddToPlaylist, onChannelSelect, 
   const [showPlayerControls, setShowPlayerControls] = useState(false);
   const controlsHideTimerRef = useRef<number | null>(null);
   const playerContainerRef = useRef<HTMLDivElement | null>(null);
-
-  // Download state
-  const [downloadProgress, setDownloadProgress] = useState<DownloadProgress | null>(null);
-  const [showDownloadMenu, setShowDownloadMenu] = useState(false);
-  const [qualities, setQualities] = useState<VideoQuality[]>([]);
 
   // Keyboard shortcuts help
   const [showShortcuts, setShowShortcuts] = useState(false);
@@ -175,21 +169,6 @@ export function VideoPlayer({ video, onClose, onAddToPlaylist, onChannelSelect, 
     onWatched?.(video);
   }, [video, onWatched]);
 
-  useEffect(() => {
-    setShowDownloadMenu(false);
-  }, [video.bvid]);
-
-  // Load available qualities for download
-  useEffect(() => {
-    getAvailableQualities(video.bvid).then(setQualities).catch(console.error);
-  }, [video.bvid]);
-
-  // Handle download
-  const handleDownload = useCallback(async (quality: number) => {
-    setShowDownloadMenu(false);
-    await downloadVideo(video, quality, setDownloadProgress);
-  }, [video]);
-
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -202,8 +181,6 @@ export function VideoPlayer({ video, onClose, onAddToPlaylist, onChannelSelect, 
         case 'Escape':
           if (isVideoFullscreen) {
             toggleVideoFullscreen();
-          } else if (showDownloadMenu) {
-            setShowDownloadMenu(false);
           } else if (showShortcuts) {
             setShowShortcuts(false);
           } else {
@@ -212,12 +189,6 @@ export function VideoPlayer({ video, onClose, onAddToPlaylist, onChannelSelect, 
           break;
         case '?':
           setShowShortcuts(prev => !prev);
-          break;
-        case 'd':
-        case 'D':
-          if (qualities.length > 0 && !downloadProgress) {
-            setShowDownloadMenu(prev => !prev);
-          }
           break;
         case 'p':
         case 'P':
@@ -233,7 +204,7 @@ export function VideoPlayer({ video, onClose, onAddToPlaylist, onChannelSelect, 
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose, onAddToPlaylist, video, qualities.length, downloadProgress, showDownloadMenu, showShortcuts, toggleVideoFullscreen, isVideoFullscreen]);
+  }, [onClose, onAddToPlaylist, video, showShortcuts, toggleVideoFullscreen, isVideoFullscreen]);
 
   // Lock body scroll when player is open
   useEffect(() => {
@@ -491,136 +462,6 @@ export function VideoPlayer({ video, onClose, onAddToPlaylist, onChannelSelect, 
                 <path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M6 12h.01M18 12h.01M8 16h8" />
               </svg>
             </button>
-
-            {/* Download button */}
-            <div style={{ position: 'relative' }}>
-            {downloadProgress && downloadProgress.status !== 'error' ? (
-              <div
-                style={{
-                  background: 'rgba(34, 197, 94, 0.2)',
-                  border: '1px solid rgba(34, 197, 94, 0.4)',
-                  borderRadius: '8px',
-                  padding: '8px 16px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  color: '#22c55e',
-                  fontSize: '13px',
-                  fontWeight: 500,
-                  minWidth: '120px',
-                }}
-                title={downloadProgress.error}
-              >
-                {downloadProgress.status === 'completed' ? (
-                  <>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M20 6L9 17l-5-5" />
-                    </svg>
-                    Downloaded
-                  </>
-                ) : (
-                  <>
-                    <Spinner size={14} />
-                    {Math.round(downloadProgress.progress)}%
-                    {downloadProgress.speed && <span style={{ fontSize: '11px', color: '#888' }}>{downloadProgress.speed}</span>}
-                  </>
-                )}
-              </div>
-            ) : (
-              <button
-                onClick={() => {
-                  setDownloadProgress(null);
-                  setShowDownloadMenu(!showDownloadMenu);
-                }}
-                disabled={qualities.length === 0}
-                style={{
-                  background: downloadProgress?.status === 'error'
-                    ? 'rgba(239, 68, 68, 0.2)'
-                    : 'rgba(34, 197, 94, 0.2)',
-                  border: downloadProgress?.status === 'error'
-                    ? '1px solid rgba(239, 68, 68, 0.4)'
-                    : '1px solid rgba(34, 197, 94, 0.4)',
-                  borderRadius: '8px',
-                  padding: '8px 16px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  cursor: qualities.length > 0 ? 'pointer' : 'not-allowed',
-                  color: downloadProgress?.status === 'error' ? '#ef4444' : '#22c55e',
-                  fontSize: '13px',
-                  fontWeight: 500,
-                  opacity: qualities.length > 0 ? 1 : 0.5,
-                }}
-                title={downloadProgress?.error || 'Download video (D)'}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
-                </svg>
-                {downloadProgress?.status === 'error' ? 'Retry' : 'Download'}
-              </button>
-            )}
-
-            {/* Quality selector dropdown */}
-            {showDownloadMenu && qualities.length > 0 && (
-              <>
-                <div
-                  style={{ position: 'fixed', inset: 0, zIndex: 10 }}
-                  onClick={() => setShowDownloadMenu(false)}
-                />
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '100%',
-                    right: 0,
-                    marginTop: '8px',
-                    background: '#1f1f1f',
-                    borderRadius: '12px',
-                    boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    zIndex: 20,
-                    overflow: 'hidden',
-                    minWidth: '180px',
-                  }}
-                >
-                  <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
-                    <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: '#fff' }}>Select Quality</p>
-                  </div>
-                  {qualities.map((q) => (
-                    <button
-                      key={q.quality}
-                      onClick={() => handleDownload(q.quality)}
-                      style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        textAlign: 'left',
-                        fontSize: '14px',
-                        color: '#ccc',
-                        background: 'transparent',
-                        border: 'none',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'}
-                      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                    >
-                      <span>{q.description}</span>
-                      <span style={{ fontSize: '12px', color: '#666' }}>{q.quality}p</span>
-                    </button>
-                  ))}
-                  <div style={{
-                    padding: '10px 16px',
-                    borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-                    fontSize: '11px',
-                    color: '#666',
-                  }}>
-                    Some high qualities may be DASH-only. If download fails, try a lower quality.
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
 
             <button
               onClick={handleShare}

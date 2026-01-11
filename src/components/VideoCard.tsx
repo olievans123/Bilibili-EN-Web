@@ -13,27 +13,12 @@ interface VideoCardProps {
   translateChannelName?: boolean;
 }
 
-// Convert Bilibili image URLs to use local proxy in dev mode
+// Convert Bilibili image URLs to use proxy (bypasses hotlink protection)
 function proxyImageUrl(url: string): string {
   if (!url) return '';
-
-  // In production, just convert http to https
-  if (!import.meta.env.DEV) {
-    return url.replace(/^http:/, 'https:');
-  }
-
-  // In dev mode, proxy through Vite
   const httpsUrl = url.replace(/^http:/, 'https:');
-
-  // Match any hdslb.com subdomain and proxy through our catch-all
-  const hdslbMatch = httpsUrl.match(/https?:\/\/([^/]+\.hdslb\.com)(\/.*)/);
-  if (hdslbMatch) {
-    const path = hdslbMatch[2];
-    return `/img/hdslb${path}`;
-  }
-
-  // For other URLs, try direct https
-  return httpsUrl;
+  // Always proxy through our API to bypass hotlink protection
+  return `/api/img?url=${encodeURIComponent(httpsUrl)}`;
 }
 
 export function VideoCard({ video, onVideoSelect, onChannelSelect, onFavorite, isFavorited, translateTitle = true, translateChannelName = true }: VideoCardProps) {
