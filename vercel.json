@@ -1,0 +1,11 @@
+{
+  "buildCommand": "npm run build:web",
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "rewrites": [
+    { "source": "/api/bili/:path*", "destination": "/api/bili/:path*" },
+    { "source": "/api/translate/:path*", "destination": "/api/translate/:path*" },
+    { "source": "/api/passport/:path*", "destination": "/api/passport/:path*" },
+    { "source": "/((?!api).*)", "destination": "/index.html" }
+  ]
+}
