@@ -6,18 +6,12 @@ import { useIsMobile } from '../hooks/useMediaQuery';
 import { getVideoComments, getVideoUrl, getRelatedVideos, formatDuration, getChannelUrl } from '../services/bilibili';
 import { translateToEnglish } from '../services/translate';
 
-// Proxy Bilibili image URLs in dev mode
+// Proxy Bilibili image URLs to bypass hotlink protection
 function proxyImageUrl(url: string): string {
   if (!url) return '';
-  if (!import.meta.env.DEV) {
-    return url.replace(/^http:/, 'https:');
-  }
   const httpsUrl = url.replace(/^http:/, 'https:');
-  const hdslbMatch = httpsUrl.match(/https?:\/\/([^/]+\.hdslb\.com)(\/.*)/);
-  if (hdslbMatch) {
-    return `/img/hdslb${hdslbMatch[2]}`;
-  }
-  return httpsUrl;
+  // Always proxy through our API to bypass hotlink protection
+  return `/api/img?url=${encodeURIComponent(httpsUrl)}`;
 }
 
 interface VideoPlayerProps {
