@@ -73,19 +73,21 @@ function PageHeader({
   title,
   subtitle,
   showBack,
-  onBack
+  onBack,
+  isMobile,
 }: {
   title: string;
   subtitle?: string;
   showBack?: boolean;
   onBack?: () => void;
+  isMobile?: boolean;
 }) {
   return (
     <div style={{
       display: 'flex',
       alignItems: 'center',
-      gap: '12px',
-      marginBottom: '20px',
+      gap: isMobile ? '8px' : '12px',
+      marginBottom: isMobile ? '12px' : '20px',
       animation: 'fadeIn 0.3s ease-out',
     }}>
       {showBack && onBack && (
@@ -95,8 +97,8 @@ function PageHeader({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            width: '36px',
-            height: '36px',
+            width: isMobile ? '32px' : '36px',
+            height: isMobile ? '32px' : '36px',
             borderRadius: '50%',
             background: 'rgba(255, 255, 255, 0.05)',
             border: 'none',
@@ -114,7 +116,7 @@ function PageHeader({
             e.currentTarget.style.color = '#888';
           }}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg width={isMobile ? '18' : '20'} height={isMobile ? '18' : '20'} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
         </button>
@@ -122,7 +124,7 @@ function PageHeader({
       <div>
         <h1 style={{
           margin: 0,
-          fontSize: showBack ? '24px' : '28px',
+          fontSize: isMobile ? (showBack ? '18px' : '20px') : (showBack ? '24px' : '28px'),
           fontWeight: 700,
           color: '#fff',
           lineHeight: 1.2,
@@ -132,7 +134,7 @@ function PageHeader({
         {subtitle && (
           <p style={{
             margin: '4px 0 0 0',
-            fontSize: '14px',
+            fontSize: isMobile ? '12px' : '14px',
             color: '#666',
           }}>
             {subtitle}
@@ -144,18 +146,29 @@ function PageHeader({
 }
 
 // Quick category pills for home view
-function QuickCategories({ selected, onSelect }: { selected: number; onSelect: (tid: number) => void }) {
+function QuickCategories({ selected, onSelect, isMobile }: { selected: number; onSelect: (tid: number) => void; isMobile: boolean }) {
   const [expanded, setExpanded] = useState(false);
-  const visibleCats = expanded ? CATEGORIES : CATEGORIES.slice(0, 10);
-  const hasMore = CATEGORIES.length > 10;
+  // On mobile, show all categories in horizontal scroll; on desktop, use expand/collapse
+  const visibleCats = isMobile ? CATEGORIES : (expanded ? CATEGORIES : CATEGORIES.slice(0, 10));
+  const hasMore = !isMobile && CATEGORIES.length > 10;
 
   return (
-    <div style={{
-      display: 'flex',
-      gap: '8px',
-      flexWrap: 'wrap',
-      alignItems: 'center',
-    }}>
+    <div
+      className={isMobile ? 'hide-scrollbar' : undefined}
+      style={{
+        display: 'flex',
+        gap: isMobile ? '6px' : '8px',
+        flexWrap: isMobile ? 'nowrap' : 'wrap',
+        alignItems: 'center',
+        overflowX: isMobile ? 'auto' : 'visible',
+        paddingBottom: isMobile ? '8px' : '0',
+        marginRight: isMobile ? '-12px' : '0',
+        paddingRight: isMobile ? '12px' : '0',
+        WebkitOverflowScrolling: 'touch',
+        scrollbarWidth: 'none',
+        msOverflowStyle: 'none',
+      }}
+    >
       {visibleCats.map(cat => {
         const isSelected = selected === cat.tid;
         return (
@@ -163,10 +176,12 @@ function QuickCategories({ selected, onSelect }: { selected: number; onSelect: (
             key={cat.tid}
             onClick={() => onSelect(cat.tid)}
             style={{
-              padding: '8px 16px',
-              borderRadius: '20px',
-              fontSize: '13px',
+              padding: isMobile ? '6px 12px' : '8px 16px',
+              borderRadius: isMobile ? '16px' : '20px',
+              fontSize: isMobile ? '12px' : '13px',
               fontWeight: 500,
+              whiteSpace: 'nowrap',
+              flexShrink: 0,
               border: isSelected
                 ? '1px solid rgba(0, 161, 214, 0.5)'
                 : '1px solid rgba(255, 255, 255, 0.1)',
@@ -200,10 +215,12 @@ function QuickCategories({ selected, onSelect }: { selected: number; onSelect: (
         <button
           onClick={() => setExpanded(!expanded)}
           style={{
-            padding: '8px 16px',
-            borderRadius: '20px',
-            fontSize: '13px',
+            padding: isMobile ? '6px 12px' : '8px 16px',
+            borderRadius: isMobile ? '16px' : '20px',
+            fontSize: isMobile ? '12px' : '13px',
             fontWeight: 500,
+            whiteSpace: 'nowrap',
+            flexShrink: 0,
             border: '1px solid rgba(255, 255, 255, 0.1)',
             background: 'transparent',
             color: '#888',
@@ -504,15 +521,17 @@ function App() {
         maxWidth: '1400px',
         margin: '0 auto',
         padding: isMobile ? '12px' : '24px',
+        paddingBottom: isMobile ? '80px' : '24px', // Extra space for FABs on mobile
       }}>
         {/* Page header - consistent across all views */}
-        <div style={{ marginBottom: '24px' }} key={viewMode}>
+        <div style={{ marginBottom: isMobile ? '16px' : '24px' }} key={viewMode}>
           {viewMode === 'search' ? (
             <>
               <PageHeader
                 title={`Results for "${searchQuery}"`}
                 showBack
                 onBack={handleLogoClick}
+                isMobile={isMobile}
               />
               <SearchFiltersBar filters={searchFilters} onChange={handleFiltersChange} />
             </>
@@ -522,6 +541,7 @@ function App() {
                 title={getCategoryName()}
                 showBack
                 onBack={handleLogoClick}
+                isMobile={isMobile}
               />
               <CategoryNav
                 selectedCategory={selectedCategory}
@@ -530,8 +550,8 @@ function App() {
             </>
           ) : (
             <>
-              <PageHeader title="Home" />
-              <QuickCategories selected={selectedCategory} onSelect={handleCategorySelect} />
+              <PageHeader title="Home" isMobile={isMobile} />
+              <QuickCategories selected={selectedCategory} onSelect={handleCategorySelect} isMobile={isMobile} />
             </>
           )}
         </div>
@@ -718,15 +738,15 @@ function App() {
 
       {/* Footer */}
       <footer style={{
-        padding: '40px 24px',
+        padding: isMobile ? '24px 16px' : '40px 24px',
         textAlign: 'center',
         borderTop: '1px solid rgba(255, 255, 255, 0.05)',
-        marginTop: '40px',
+        marginTop: isMobile ? '24px' : '40px',
       }}>
-        <p style={{ fontSize: '14px', color: '#555' }}>
+        <p style={{ fontSize: isMobile ? '12px' : '14px', color: '#555' }}>
           Bilibili EN - Browse Bilibili in English
         </p>
-        <p style={{ fontSize: '12px', color: '#444', marginTop: '8px' }}>
+        <p style={{ fontSize: isMobile ? '11px' : '12px', color: '#444', marginTop: '6px' }}>
           Not affiliated with Bilibili. For educational purposes only.
         </p>
       </footer>
@@ -743,6 +763,10 @@ function App() {
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(10px); }
           to { opacity: 1; transform: translateY(0); }
+        }
+        /* Hide scrollbar for horizontal scroll on mobile */
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
         }
       `}</style>
 
