@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
 import type { BiliVideo, BiliComment } from '../types/bilibili';
 import type { PlaylistContext } from './PlaylistPanel';
-import { getVideoComments, getVideoUrl, getRelatedVideos, formatDuration } from '../services/bilibili';
+import { getVideoComments, getVideoUrl, getRelatedVideos, formatDuration, getChannelUrl } from '../services/bilibili';
 import { translateToEnglish } from '../services/translate';
 
 // Proxy Bilibili image URLs in dev mode
@@ -22,7 +22,6 @@ interface VideoPlayerProps {
   video: BiliVideo;
   onClose: () => void;
   onAddToPlaylist?: (video: BiliVideo) => void;
-  onChannelSelect?: (owner: BiliVideo['owner']) => void;
   onWatched?: (video: BiliVideo) => void;
   onProgress?: (video: BiliVideo, progress: number) => void;
   onFavorite?: (video: BiliVideo) => void;
@@ -40,7 +39,7 @@ interface VideoPlayerProps {
 
 const COMMENTS_PAGE_SIZE = 20;
 
-export function VideoPlayer({ video, onClose, onAddToPlaylist, onChannelSelect, onWatched, onFavorite, isFavorited, isLoggedIn = false, onVideoChange, playlistContext, onPlayNext, translateTitles = true, translateDescriptions = true, translateComments = true, translateChannelNames = true }: VideoPlayerProps) {
+export function VideoPlayer({ video, onClose, onAddToPlaylist, onWatched, onFavorite, isFavorited, isLoggedIn = false, onVideoChange, playlistContext, onPlayNext, translateTitles = true, translateDescriptions = true, translateComments = true, translateChannelNames = true }: VideoPlayerProps) {
   const [comments, setComments] = useState<BiliComment[]>([]);
   const [loadingComments, setLoadingComments] = useState(true);
   const [loadingMoreComments, setLoadingMoreComments] = useState(false);
@@ -821,23 +820,21 @@ export function VideoPlayer({ video, onClose, onAddToPlaylist, onChannelSelect, 
                     {formatTimeAgo(video.pubdate)}
                   </p>
                 </div>
-                {onChannelSelect && (
-                  <button
-                    onClick={() => onChannelSelect(video.owner)}
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.06)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      borderRadius: '8px',
-                      padding: '6px 10px',
-                      fontSize: '12px',
-                      color: '#ccc',
-                      cursor: 'pointer',
-                      marginLeft: '4px',
-                    }}
-                  >
-                    View channel
-                  </button>
-                )}
+                <button
+                  onClick={() => window.open(getChannelUrl(video.owner.mid), '_blank')}
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.06)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '8px',
+                    padding: '6px 10px',
+                    fontSize: '12px',
+                    color: '#ccc',
+                    cursor: 'pointer',
+                    marginLeft: '4px',
+                  }}
+                >
+                  View channel
+                </button>
               </div>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 {onAddToPlaylist && (

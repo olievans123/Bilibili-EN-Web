@@ -5,14 +5,13 @@ interface VideoGridProps {
   videos: BiliVideo[];
   loading?: boolean;
   onVideoSelect?: (video: BiliVideo) => void;
-  onChannelSelect?: (owner: BiliVideo['owner']) => void;
   onFavorite?: (video: BiliVideo) => void;
   isFavorited?: (bvid: string) => boolean;
   translateTitles?: boolean;
   translateChannelNames?: boolean;
 }
 
-export function VideoGrid({ videos, loading, onVideoSelect, onChannelSelect, onFavorite, isFavorited, translateTitles = true, translateChannelNames = true }: VideoGridProps) {
+export function VideoGrid({ videos, loading, onVideoSelect, onFavorite, isFavorited, translateTitles = true, translateChannelNames = true }: VideoGridProps) {
   if (loading) {
     return (
       <div style={{
@@ -48,7 +47,6 @@ export function VideoGrid({ videos, loading, onVideoSelect, onChannelSelect, onF
           <VideoCard
             video={video}
             onVideoSelect={onVideoSelect}
-            onChannelSelect={onChannelSelect}
             onFavorite={onFavorite}
             isFavorited={isFavorited?.(video.bvid)}
             translateTitle={translateTitles}

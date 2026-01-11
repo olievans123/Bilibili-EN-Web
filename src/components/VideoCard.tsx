@@ -1,12 +1,11 @@
 import { useState } from 'react';
 import { open } from '@tauri-apps/plugin-shell';
 import type { BiliVideo } from '../types/bilibili';
-import { formatDuration, formatViewCount, getVideoUrl } from '../services/bilibili';
+import { formatDuration, formatViewCount, getVideoUrl, getChannelUrl } from '../services/bilibili';
 
 interface VideoCardProps {
   video: BiliVideo;
   onVideoSelect?: (video: BiliVideo) => void;
-  onChannelSelect?: (owner: BiliVideo['owner']) => void;
   onFavorite?: (video: BiliVideo) => void;
   isFavorited?: boolean;
   translateTitle?: boolean;
@@ -21,7 +20,7 @@ function proxyImageUrl(url: string): string {
   return `/api/img?url=${encodeURIComponent(httpsUrl)}`;
 }
 
-export function VideoCard({ video, onVideoSelect, onChannelSelect, onFavorite, isFavorited, translateTitle = true, translateChannelName = true }: VideoCardProps) {
+export function VideoCard({ video, onVideoSelect, onFavorite, isFavorited, translateTitle = true, translateChannelName = true }: VideoCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [imgError, setImgError] = useState(false);
 
@@ -194,12 +193,11 @@ export function VideoCard({ video, onVideoSelect, onChannelSelect, onFavorite, i
             alignItems: 'center',
             gap: '8px',
             marginBottom: '8px',
-            cursor: onChannelSelect ? 'pointer' : 'default',
+            cursor: 'pointer',
           }}
           onClick={(event) => {
-            if (!onChannelSelect) return;
             event.stopPropagation();
-            onChannelSelect(video.owner);
+            window.open(getChannelUrl(video.owner.mid), '_blank');
           }}
         >
           {video.owner.face && (
