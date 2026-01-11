@@ -403,102 +403,80 @@ if (typeof window !== 'undefined') {
   };
 }
 
+// Cache for ranking videos (fetched once, paginated client-side)
+let rankingCache: BiliVideo[] = [];
+let rankingCacheTime = 0;
+const RANKING_CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+
 export async function getTrending(pageNum: number = 1): Promise<BiliTrendingResult> {
   try {
-    console.log('[Bilibili] START getTrending, page:', pageNum);
-    if (import.meta.env.DEV && window.biliDebug) window.biliDebug.lastError = undefined;
-
     const pageSize = 20;
-    const url = `${API_BASE}/x/web-interface/popular?ps=${pageSize}&pn=${pageNum}`;
-    console.log('[Bilibili] URL:', url);
-    console.log('[Bilibili] Headers:', JSON.stringify(getHeaders()));
+    const now = Date.now();
 
-    console.log('[Bilibili] Calling apiFetch...');
-    const response = await apiFetch(url, {
-      method: 'GET',
-      headers: getHeaders()
-    });
+    // Fetch ranking if cache is empty or expired
+    if (rankingCache.length === 0 || now - rankingCacheTime > RANKING_CACHE_TTL) {
+      console.log('[Bilibili] Fetching ranking...');
+      const url = `${API_BASE}/x/web-interface/ranking/v2?rid=0&type=all`;
 
-    console.log('[Bilibili] Fetch completed, status:', response.status);
-    if (import.meta.env.DEV && window.biliDebug) window.biliDebug.lastResponse = { status: response.status };
+      const response = await apiFetch(url, {
+        method: 'GET',
+        headers: getHeaders()
+      });
 
-    if (!response.ok) {
-      const errorMsg = `HTTP error: ${response.status} ${response.statusText}`;
-      console.error('[Bilibili]', errorMsg);
-      if (import.meta.env.DEV && window.biliDebug) window.biliDebug.lastError = errorMsg;
-      return { videos: [] };
+      if (!response.ok) {
+        return { videos: [], error: `HTTP error: ${response.status}` };
+      }
+
+      const data = JSON.parse(await response.text());
+
+      if (data.code !== 0) {
+        return { videos: [], error: data.message };
+      }
+
+      const allVideos: BiliVideo[] = data.data.list.map((item: Record<string, unknown>) => ({
+        bvid: item.bvid as string,
+        aid: Number(item.aid) || 0,
+        title: item.title as string,
+        desc: item.desc as string,
+        pic: normalizeImageUrl(item.pic),
+        duration: item.duration as number,
+        view: (item.stat as Record<string, number>).view,
+        danmaku: (item.stat as Record<string, number>).danmaku,
+        reply: (item.stat as Record<string, number>).reply,
+        favorite: (item.stat as Record<string, number>).favorite,
+        coin: (item.stat as Record<string, number>).coin,
+        share: (item.stat as Record<string, number>).share,
+        like: (item.stat as Record<string, number>).like,
+        owner: item.owner as { mid: number; name: string; face: string },
+        pubdate: item.pubdate as number,
+        cid: item.cid as number,
+      }));
+
+      // Translate all videos
+      await translateVideoDetails(allVideos);
+
+      rankingCache = allVideos;
+      rankingCacheTime = now;
+      console.log('[Bilibili] Cached', rankingCache.length, 'ranking videos');
     }
 
-    console.log('[Bilibili] Getting response text...');
-    const text = await response.text();
-    console.log('[Bilibili] Response length:', text.length, 'preview:', text.substring(0, 200));
+    // Paginate from cache
+    const start = (pageNum - 1) * pageSize;
+    const end = start + pageSize;
+    const videos = rankingCache.slice(start, end);
+    const hasMore = end < rankingCache.length;
 
-    if (text.length === 0) {
-      console.error('[Bilibili] Empty response received');
-      if (import.meta.env.DEV && window.biliDebug) window.biliDebug.lastError = 'Empty response from API';
-      return { videos: [], error: 'Empty response from API' };
-    }
-
-    console.log('[Bilibili] Parsing JSON...');
-    const data = JSON.parse(text);
-    console.log('[Bilibili] API code:', data.code, 'message:', data.message);
-    console.log('[Bilibili] Data keys:', Object.keys(data));
-    if (data.data) {
-      console.log('[Bilibili] data.data keys:', Object.keys(data.data));
-      console.log('[Bilibili] data.data.list length:', data.data.list?.length);
-    }
-    if (import.meta.env.DEV && window.biliDebug) {
-      window.biliDebug.lastResponse = {
-        code: data.code,
-        message: data.message,
-        hasData: !!data.data,
-        hasList: !!data.data?.list,
-        listLength: data.data?.list?.length,
-        rawPreview: text.substring(0, 500),
-      };
-    }
-
-    if (data.code !== 0) {
-      const errorMsg = `Bilibili API error: ${data.message}`;
-      console.error('[Bilibili]', errorMsg);
-      if (import.meta.env.DEV && window.biliDebug) window.biliDebug.lastError = errorMsg;
-      return { videos: [] };
-    }
-
-    console.log('[Bilibili] Got', data.data?.list?.length || 0, 'videos');
-
-    const videos: BiliVideo[] = data.data.list.map((item: Record<string, unknown>) => ({
-      bvid: item.bvid as string,
-      aid: Number(item.aid) || 0,
-      title: item.title as string,
-      desc: item.desc as string,
-      pic: normalizeImageUrl(item.pic),
-      duration: item.duration as number,
-      view: (item.stat as Record<string, number>).view,
-      danmaku: (item.stat as Record<string, number>).danmaku,
-      reply: (item.stat as Record<string, number>).reply,
-      favorite: (item.stat as Record<string, number>).favorite,
-      coin: (item.stat as Record<string, number>).coin,
-      share: (item.stat as Record<string, number>).share,
-      like: (item.stat as Record<string, number>).like,
-      owner: item.owner as { mid: number; name: string; face: string },
-      pubdate: item.pubdate as number,
-      cid: item.cid as number,
-    }));
-
-    // Translate titles and channel names
-    await translateVideoDetails(videos);
+    console.log('[Bilibili] Returning page', pageNum, ':', videos.length, 'videos, hasMore:', hasMore);
 
     return {
       videos,
       page: pageNum,
       pageSize,
-      hasMore: !data.data.no_more,
+      hasMore,
     };
   } catch (error) {
-    const errorMsg = `Error fetching trending: ${error instanceof Error ? error.message : String(error)}`;
+    const errorMsg = `Error fetching ranking: ${error instanceof Error ? error.message : String(error)}`;
     console.error('[Bilibili]', errorMsg, error);
-    if (window.biliDebug) window.biliDebug.lastError = errorMsg;
     return { videos: [], error: errorMsg };
   }
 }
