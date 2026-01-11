@@ -58,6 +58,7 @@ export function VideoPlayer({ video, onClose, onAddToPlaylist, onWatched, onFavo
   const [showPlayerControls, setShowPlayerControls] = useState(false);
   const controlsHideTimerRef = useRef<number | null>(null);
   const playerContainerRef = useRef<HTMLDivElement | null>(null);
+  const mainContentRef = useRef<HTMLDivElement | null>(null);
 
   // Keyboard shortcuts help
   const [showShortcuts, setShowShortcuts] = useState(false);
@@ -264,6 +265,10 @@ export function VideoPlayer({ video, onClose, onAddToPlaylist, onWatched, onFavo
 
   useEffect(() => {
     setIsVideoFullscreen(false);
+    // Scroll to top when video changes
+    if (mainContentRef.current) {
+      mainContentRef.current.scrollTop = 0;
+    }
   }, [video.bvid]);
 
   const loadComments = useCallback(async (aid: number, cursor: number, append: boolean, bvid?: string) => {
@@ -553,15 +558,19 @@ export function VideoPlayer({ video, onClose, onAddToPlaylist, onWatched, onFavo
       />
 
       {/* Main content */}
-      <div style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: isMobile ? 'column' : 'row',
-        overflow: isMobile ? 'auto' : 'hidden',
-        gap: isVideoFullscreen ? 0 : (isMobile ? '0' : '16px'),
-        padding: isVideoFullscreen ? 0 : (isMobile ? '0' : '16px'),
-        justifyContent: isVideoFullscreen ? 'stretch' : 'center',
-      }}>
+      <div
+        ref={mainContentRef}
+        style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: isMobile ? 'column' : 'row',
+          overflow: isMobile ? 'auto' : 'hidden',
+          overflowX: 'hidden',
+          gap: isVideoFullscreen ? 0 : (isMobile ? '0' : '16px'),
+          padding: isVideoFullscreen ? 0 : (isMobile ? '0' : '16px'),
+          justifyContent: isVideoFullscreen ? 'stretch' : 'center',
+        }}
+      >
         {/* Video section */}
         <div style={{
           flex: isMobile ? 'none' : '1 1 auto',
@@ -795,28 +804,33 @@ export function VideoPlayer({ video, onClose, onAddToPlaylist, onWatched, onFavo
             <div style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '20px',
-              paddingBottom: '16px',
+              gap: isMobile ? '12px' : '20px',
+              paddingBottom: isMobile ? '12px' : '16px',
               borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-              marginBottom: '16px',
+              marginBottom: isMobile ? '12px' : '16px',
+              overflowX: isMobile ? 'auto' : 'visible',
+              WebkitOverflowScrolling: 'touch',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
             }}>
-              <StatItem icon="eye" value={formatNumber(video.view)} label="views" />
-              <StatItem icon="like" value={formatNumber(video.like)} label="likes" />
-              <StatItem icon="coin" value={formatNumber(video.coin)} label="coins" />
-              <StatItem icon="star" value={formatNumber(video.favorite)} label="favorites" />
-              <StatItem icon="comment" value={formatNumber(video.danmaku)} label="danmaku" />
+              <StatItem icon="eye" value={formatNumber(video.view)} label="views" isMobile={isMobile} />
+              <StatItem icon="like" value={formatNumber(video.like)} label="likes" isMobile={isMobile} />
+              <StatItem icon="coin" value={formatNumber(video.coin)} label="coins" isMobile={isMobile} />
+              <StatItem icon="star" value={formatNumber(video.favorite)} label="favorites" isMobile={isMobile} />
+              <StatItem icon="comment" value={formatNumber(video.danmaku)} label="danmaku" isMobile={isMobile} />
             </div>
 
             {/* Channel info */}
             <div style={{
               display: 'flex',
-              alignItems: 'center',
+              flexDirection: isMobile ? 'column' : 'row',
+              alignItems: isMobile ? 'stretch' : 'center',
               gap: '12px',
             }}>
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '12px',
+                gap: isMobile ? '10px' : '12px',
                 flex: 1,
                 minWidth: 0,
               }}>
@@ -825,48 +839,55 @@ export function VideoPlayer({ video, onClose, onAddToPlaylist, onWatched, onFavo
                     src={proxyImageUrl(video.owner.face)}
                     alt={video.owner.name}
                     style={{
-                      width: '40px',
-                      height: '40px',
+                      width: isMobile ? '36px' : '40px',
+                      height: isMobile ? '36px' : '40px',
                       borderRadius: '50%',
                       background: '#333',
+                      flexShrink: 0,
                     }}
                     onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                   />
                 )}
-                <div>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{
                     margin: 0,
-                    fontSize: '15px',
+                    fontSize: isMobile ? '14px' : '15px',
                     fontWeight: 500,
                     color: '#fff',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
                   }}>
                     {displayChannelName}
                   </p>
                   <p style={{
                     margin: '2px 0 0 0',
-                    fontSize: '12px',
+                    fontSize: isMobile ? '11px' : '12px',
                     color: '#666',
                   }}>
                     {formatTimeAgo(video.pubdate)}
                   </p>
                 </div>
-                <button
-                  onClick={() => window.open(getChannelUrl(video.owner.mid), '_blank')}
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.06)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    borderRadius: '8px',
-                    padding: '6px 10px',
-                    fontSize: '12px',
-                    color: '#ccc',
-                    cursor: 'pointer',
-                    marginLeft: '4px',
-                  }}
-                >
-                  View channel
-                </button>
+                {!isMobile && (
+                  <button
+                    onClick={() => window.open(getChannelUrl(video.owner.mid), '_blank')}
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.06)',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      borderRadius: '8px',
+                      padding: '6px 10px',
+                      fontSize: '12px',
+                      color: '#ccc',
+                      cursor: 'pointer',
+                      marginLeft: '4px',
+                      flexShrink: 0,
+                    }}
+                  >
+                    View channel
+                  </button>
+                )}
               </div>
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                 {onAddToPlaylist && (
                   <button
                     onClick={() => onAddToPlaylist(video)}
@@ -1483,32 +1504,33 @@ function formatTimeAgo(timestamp: number): string {
   return `${Math.floor(diff / 2592000)}mo ago`;
 }
 
-function StatItem({ icon, value, label }: { icon: string; value: string; label: string }) {
+function StatItem({ icon, value, label, isMobile = false }: { icon: string; value: string; label: string; isMobile?: boolean }) {
+  const iconSize = isMobile ? 14 : 16;
   const icons: Record<string, ReactNode> = {
     eye: (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
         <circle cx="12" cy="12" r="3" />
       </svg>
     ),
     like: (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
       </svg>
     ),
     coin: (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <circle cx="12" cy="12" r="10" />
         <path d="M12 6v12M9 9h6M9 15h6" />
       </svg>
     ),
     star: (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
       </svg>
     ),
     comment: (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
       </svg>
     ),
@@ -1518,12 +1540,14 @@ function StatItem({ icon, value, label }: { icon: string; value: string; label: 
     <div style={{
       display: 'flex',
       alignItems: 'center',
-      gap: '6px',
+      gap: isMobile ? '4px' : '6px',
       color: '#888',
+      flexShrink: 0,
+      whiteSpace: 'nowrap',
     }}>
       <span style={{ color: '#666' }}>{icons[icon]}</span>
-      <span style={{ fontSize: '14px', fontWeight: 500 }}>{value}</span>
-      <span style={{ fontSize: '12px', color: '#555' }}>{label}</span>
+      <span style={{ fontSize: isMobile ? '12px' : '14px', fontWeight: 500 }}>{value}</span>
+      <span style={{ fontSize: isMobile ? '10px' : '12px', color: '#555' }}>{label}</span>
     </div>
   );
 }
