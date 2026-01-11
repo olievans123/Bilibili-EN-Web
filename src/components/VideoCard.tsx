@@ -165,16 +165,16 @@ export function VideoCard({ video, onVideoSelect, onFavorite, isFavorited, trans
 
       {/* Content */}
       <div style={{
-        padding: isMobile ? '10px' : '14px',
+        padding: isMobile ? '12px' : '14px',
         display: 'flex',
         flexDirection: 'column',
-        minHeight: isMobile ? '80px' : '130px',
+        minHeight: isMobile ? '88px' : '130px',
       }}>
         {/* Title */}
         <h3 style={{
           fontWeight: 600,
           color: '#fff',
-          fontSize: isMobile ? '12px' : '14px',
+          fontSize: isMobile ? '13px' : '14px',
           lineHeight: 1.4,
           marginBottom: isMobile ? '4px' : '6px',
           display: '-webkit-box',
@@ -182,7 +182,7 @@ export function VideoCard({ video, onVideoSelect, onFavorite, isFavorited, trans
           WebkitBoxOrient: 'vertical',
           overflow: 'hidden',
           transition: 'color 0.2s',
-          minHeight: isMobile ? '34px' : '42px',
+          minHeight: isMobile ? '36px' : '42px',
           ...(!isMobile && isHovered ? { color: '#00a1d6' } : {}),
         }}>
           {displayTitle}
@@ -233,7 +233,7 @@ export function VideoCard({ video, onVideoSelect, onFavorite, isFavorited, trans
           display: 'flex',
           alignItems: 'center',
           gap: isMobile ? '8px' : '12px',
-          fontSize: isMobile ? '10px' : '12px',
+          fontSize: isMobile ? '11px' : '12px',
           color: '#666',
           marginTop: 'auto',
         }}>
