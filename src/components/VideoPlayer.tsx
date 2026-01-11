@@ -311,13 +311,20 @@ export function VideoPlayer({ video, onClose, onAddToPlaylist, onWatched, onFavo
       console.log('[Comments] Page', cursor, '- API returned', result.comments.length, 'comments, total:', result.total, 'hasMore:', result.hasMore);
 
       if (!append) {
-        // Initial load - just set the comments
+        // Initial load - preserve scroll position
+        const scrollTop = mainContentRef.current?.scrollTop ?? 0;
         setComments(result.comments);
         setCommentsTotal(result.total);
         setHasMoreComments(result.hasMore ?? result.comments.length === COMMENTS_PAGE_SIZE);
         setNextCursor(result.nextCursor);
         setCommentsRequireLogin(result.requiresLogin ?? false);
         setLoadingComments(false);
+        // Restore scroll position after state update
+        requestAnimationFrame(() => {
+          if (mainContentRef.current) {
+            mainContentRef.current.scrollTop = scrollTop;
+          }
+        });
       } else {
         // Append mode - add new comments
         console.log('[Comments] Append mode: got', result.comments.length, 'comments from API');
