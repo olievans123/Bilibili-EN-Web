@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { SearchBar } from './SearchBar';
+import { LoginModal } from './LoginModal';
 import type { BiliUser } from '../types/bilibili';
 
 interface HeaderProps {
@@ -10,8 +11,9 @@ interface HeaderProps {
   onLogoClick?: () => void;
 }
 
-export function Header({ user, onSearch, onLogout, onLogoClick }: HeaderProps) {
+export function Header({ user, onSearch, onLogout, onLoginSuccess, onLogoClick }: HeaderProps) {
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   return (
     <>
@@ -145,34 +147,68 @@ export function Header({ user, onSearch, onLogout, onLogoClick }: HeaderProps) {
                 )}
               </div>
             ) : (
-              <a
-                href="https://github.com/olievans123/Bilibili-EN/releases/latest"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  background: 'rgba(34, 197, 94, 0.2)',
-                  border: '1px solid rgba(34, 197, 94, 0.4)',
-                  borderRadius: '8px',
-                  padding: '8px 16px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  color: '#22c55e',
-                  fontSize: '13px',
-                  fontWeight: 500,
-                  textDecoration: 'none',
-                }}
-                title="Download desktop app for more features"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
-                </svg>
-                Get Desktop App
-              </a>
+              <>
+                <button
+                  onClick={() => setShowLoginModal(true)}
+                  style={{
+                    background: 'rgba(251, 114, 153, 0.2)',
+                    border: '1px solid rgba(251, 114, 153, 0.4)',
+                    borderRadius: '8px',
+                    padding: '8px 16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    color: '#fb7299',
+                    fontSize: '13px',
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                  }}
+                  title="Sign in to Bilibili"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
+                  Sign in
+                </button>
+                <a
+                  href="https://github.com/olievans123/Bilibili-EN/releases/latest"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    background: 'rgba(34, 197, 94, 0.2)',
+                    border: '1px solid rgba(34, 197, 94, 0.4)',
+                    borderRadius: '8px',
+                    padding: '8px 16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    color: '#22c55e',
+                    fontSize: '13px',
+                    fontWeight: 500,
+                    textDecoration: 'none',
+                  }}
+                  title="Download desktop app for more features"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+                  </svg>
+                  Get Desktop App
+                </a>
+              </>
             )}
           </div>
         </div>
       </header>
+
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onLoginSuccess={() => {
+          setShowLoginModal(false);
+          onLoginSuccess();
+        }}
+      />
     </>
   );
 }
