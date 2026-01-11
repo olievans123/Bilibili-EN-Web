@@ -1,4 +1,4 @@
-// Vercel Edge Function to proxy Bilibili API requests (bypasses CORS)
+// Vercel Edge Function to proxy Bilibili API requests
 
 export const config = {
   runtime: 'edge',
@@ -6,7 +6,6 @@ export const config = {
 
 const BILIBILI_API = 'https://api.bilibili.com';
 
-// Generate buvid for anonymous API access
 function generateBuvid(): string {
   const chars = '0123456789ABCDEF';
   let result = '';
@@ -19,21 +18,18 @@ function generateBuvid(): string {
 export default async function handler(request: Request): Promise<Response> {
   const url = new URL(request.url);
 
-  // Extract the path after /api/bili/
-  const pathMatch = url.pathname.match(/^\/api\/bili\/(.*)$/);
-  const biliPath = pathMatch?.[1] || '';
+  // Extract path after /api/bili
+  const biliPath = url.pathname.replace(/^\/api\/bili\/?/, '');
 
   if (!biliPath) {
-    return new Response(JSON.stringify({ error: 'Missing path' }), {
+    return new Response(JSON.stringify({ error: 'Missing path', pathname: url.pathname }), {
       status: 400,
       headers: { 'Content-Type': 'application/json' },
     });
   }
 
-  // Build the Bilibili API URL
   const biliUrl = `${BILIBILI_API}/${biliPath}${url.search}`;
 
-  // Generate session cookies for anonymous access
   const buvid3 = generateBuvid();
   const buvid4 = generateBuvid();
   const cookies = `buvid3=${buvid3}; buvid4=${buvid4}; b_nut=${Date.now()}`;
@@ -64,15 +60,11 @@ export default async function handler(request: Request): Promise<Response> {
       },
     });
   } catch (error) {
-    console.error('Proxy error:', error);
     return new Response(
-      JSON.stringify({ error: 'Failed to fetch from Bilibili API' }),
+      JSON.stringify({ error: 'Proxy failed', details: String(error) }),
       {
         status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-        },
+        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
       }
     );
   }
