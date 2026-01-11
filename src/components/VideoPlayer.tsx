@@ -59,6 +59,7 @@ export function VideoPlayer({ video, onClose, onAddToPlaylist, onWatched, onFavo
   const controlsHideTimerRef = useRef<number | null>(null);
   const playerContainerRef = useRef<HTMLDivElement | null>(null);
   const mainContentRef = useRef<HTMLDivElement | null>(null);
+  const savedScrollRef = useRef<number>(0);
 
   // Keyboard shortcuts help
   const [showShortcuts, setShowShortcuts] = useState(false);
@@ -265,10 +266,8 @@ export function VideoPlayer({ video, onClose, onAddToPlaylist, onWatched, onFavo
 
   useEffect(() => {
     setIsVideoFullscreen(false);
-    // Scroll to top when video changes
-    if (mainContentRef.current) {
-      mainContentRef.current.scrollTop = 0;
-    }
+    // Save scroll position before video changes
+    savedScrollRef.current = mainContentRef.current?.scrollTop ?? 0;
   }, [video.bvid]);
 
   const loadComments = useCallback(async (aid: number, cursor: number, append: boolean, bvid?: string) => {
@@ -675,10 +674,15 @@ export function VideoPlayer({ video, onClose, onAddToPlaylist, onWatched, onFavo
               allow="autoplay; fullscreen"
               title={video.title}
               onLoad={() => {
-                // Restore scroll position after iframe loads to prevent jump
-                if (mainContentRef.current) {
-                  mainContentRef.current.scrollTop = 0;
-                }
+                // Restore saved scroll position after iframe loads to prevent jump
+                const restoreScroll = () => {
+                  if (mainContentRef.current) {
+                    mainContentRef.current.scrollTop = savedScrollRef.current;
+                  }
+                };
+                restoreScroll();
+                requestAnimationFrame(restoreScroll);
+                setTimeout(restoreScroll, 100);
               }}
             />
             {!isVideoFullscreen && (
