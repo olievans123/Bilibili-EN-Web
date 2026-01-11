@@ -579,6 +579,7 @@ export function VideoPlayer({ video, onClose, onAddToPlaylist, onWatched, onFavo
           gap: isVideoFullscreen ? 0 : (isMobile ? '0' : '16px'),
           padding: isVideoFullscreen ? 0 : (isMobile ? '0' : '16px'),
           justifyContent: isVideoFullscreen ? 'stretch' : 'center',
+          overflowAnchor: 'none',
         }}
       >
         {/* Video section */}
@@ -673,6 +674,12 @@ export function VideoPlayer({ video, onClose, onAddToPlaylist, onWatched, onFavo
               allowFullScreen
               allow="autoplay; fullscreen"
               title={video.title}
+              onLoad={() => {
+                // Restore scroll position after iframe loads to prevent jump
+                if (mainContentRef.current) {
+                  mainContentRef.current.scrollTop = 0;
+                }
+              }}
             />
             {!isVideoFullscreen && (
               <button
