@@ -335,7 +335,12 @@ function App() {
       if (pageNum === 1) {
         setVideos(result.videos);
       } else {
-        setVideos(prev => [...prev, ...result.videos]);
+        // Deduplicate by bvid
+        setVideos(prev => {
+          const existing = new Set(prev.map(v => v.bvid));
+          const newVideos = result.videos.filter(v => !existing.has(v.bvid));
+          return [...prev, ...newVideos];
+        });
       }
       setHasMore(resolveHasMore(pageNum, result));
     } catch (err) {
@@ -359,7 +364,12 @@ function App() {
       if (pageNum === 1) {
         setVideos(result.videos);
       } else {
-        setVideos(prev => [...prev, ...result.videos]);
+        // Deduplicate by bvid
+        setVideos(prev => {
+          const existing = new Set(prev.map(v => v.bvid));
+          const newVideos = result.videos.filter(v => !existing.has(v.bvid));
+          return [...prev, ...newVideos];
+        });
       }
       setHasMore(resolveHasMore(pageNum, result));
     } catch (error) {
