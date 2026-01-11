@@ -1,30 +1,17 @@
-import { fetch as tauriFetch } from '@tauri-apps/plugin-http';
-import { load, Store } from '@tauri-apps/plugin-store';
+import { Store } from '@tauri-apps/plugin-store';
 import { setCookies, getCookies, getCurrentUser, getBuvidCookies } from './bilibili';
 import type { BiliUser } from '../types/bilibili';
 
 const STORE_KEY = 'bilibili_auth';
-const LOCAL_STORAGE_KEY = 'bilibili_auth';
-const AUTH_BASE = 'https://passport.bilibili.com';
 const AUTH_SOURCE = 'main_web';
 const AUTH_ORIGIN = 'https://passport.bilibili.com';
-const AUTH_PROXY_BASE = (import.meta.env.VITE_PASSPORT_PROXY_BASE as string | undefined)?.replace(/\/$/, '')
-  || '/api/passport';
+const AUTH_PROXY_BASE = '/api/passport';
 let store: Store | null = null;
 const AUTH_USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36';
 
-// Check isTauri dynamically (Tauri 2.0 uses __TAURI_INTERNALS__)
-function checkIsTauri(): boolean {
-  return typeof window !== 'undefined'
-    && Boolean((window as unknown as { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__);
-}
-
 async function getStore(): Promise<Store> {
-  if (!checkIsTauri()) {
-    throw new Error('Store not available');
-  }
   if (!store) {
-    store = await load('auth.json');
+    store = await Store.load('auth.json');
   }
   return store;
 }
@@ -35,7 +22,6 @@ export interface QRCodeData {
 }
 
 async function authFetch(path: string, options: RequestInit = {}): Promise<Response> {
-  const url = `${AUTH_BASE}${path}`;
   const headers = new Headers(options.headers || {});
   if (!headers.has('Accept')) {
     headers.set('Accept', 'application/json, text/plain, */*');
@@ -44,17 +30,8 @@ async function authFetch(path: string, options: RequestInit = {}): Promise<Respo
     headers.set('Accept-Language', 'zh-CN,zh;q=0.9,en;q=0.8');
   }
 
-  if (checkIsTauri()) {
-    return tauriFetch(url, {
-      ...options,
-      headers: Object.fromEntries(headers.entries()),
-    });
-  }
-
-  const isDev = import.meta.env.DEV;
-  const useProxy = isDev || Boolean(import.meta.env.VITE_PASSPORT_PROXY_BASE);
-  const targetUrl = useProxy ? `${AUTH_PROXY_BASE}${path}` : url;
-
+  // Always use proxy in web mode
+  const targetUrl = `${AUTH_PROXY_BASE}${path}`;
   return window.fetch(targetUrl, {
     ...options,
     headers,
@@ -218,11 +195,6 @@ function getStatusMessage(code: number): string {
 
 export async function saveCookies(cookies: string): Promise<void> {
   try {
-    if (!checkIsTauri()) {
-      // Avoid persisting session cookies in web builds.
-      window.localStorage.removeItem(LOCAL_STORAGE_KEY);
-      return;
-    }
     const s = await getStore();
     await s.set(STORE_KEY, { cookies });
     await s.save();
@@ -233,11 +205,6 @@ export async function saveCookies(cookies: string): Promise<void> {
 
 export async function loadSavedCookies(): Promise<string | null> {
   try {
-    if (!checkIsTauri()) {
-      // Clear any legacy persisted cookies from older builds.
-      window.localStorage.removeItem(LOCAL_STORAGE_KEY);
-      return null;
-    }
     const s = await getStore();
     const data = await s.get<{ cookies: string }>(STORE_KEY);
     if (data?.cookies) {
@@ -253,11 +220,6 @@ export async function loadSavedCookies(): Promise<string | null> {
 
 export async function logout(): Promise<void> {
   try {
-    if (!checkIsTauri()) {
-      window.localStorage.removeItem(LOCAL_STORAGE_KEY);
-      setCookies('');
-      return;
-    }
     const s = await getStore();
     await s.delete(STORE_KEY);
     await s.save();

@@ -28,3 +28,5 @@ coverage
 
 # Tauri build output
 src-tauri/target
+.vercel
+.env*.local

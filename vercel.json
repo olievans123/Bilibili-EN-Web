@@ -1,11 +1,10 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "framework": "vite",
   "rewrites": [
-    { "source": "/api/bili/:path*", "destination": "/api/bili/:path*" },
-    { "source": "/api/translate/:path*", "destination": "/api/translate/:path*" },
-    { "source": "/api/passport/:path*", "destination": "/api/passport/:path*" },
+    { "source": "/api/bili/:path*", "destination": "/api/proxy?service=bili&path=:path*" },
+    { "source": "/api/translate/:path*", "destination": "/api/proxy?service=translate&path=:path*" },
+    { "source": "/api/passport/:path*", "destination": "/api/proxy?service=passport&path=:path*" },
     { "source": "/((?!api).*)", "destination": "/index.html" }
   ]
 }
