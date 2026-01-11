@@ -71,23 +71,31 @@ export function SearchBar({ onSearch, placeholder = 'Search in English or Chines
           style={{
             position: 'absolute',
             right: '4px',
-            padding: isMobile ? '6px' : '8px 20px',
+            padding: isMobile ? '6px' : '8px 16px',
             width: isMobile ? '32px' : 'auto',
             height: isMobile ? '32px' : 'auto',
-            background: 'linear-gradient(135deg, #00a1d6 0%, #00b5e5 100%)',
-            color: '#fff',
+            background: 'rgba(255, 255, 255, 0.08)',
+            color: '#999',
             fontSize: '14px',
-            fontWeight: 600,
-            borderRadius: isMobile ? '50%' : '18px',
-            border: 'none',
+            fontWeight: 500,
+            borderRadius: isMobile ? '50%' : '16px',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
             cursor: 'pointer',
-            transition: 'transform 0.2s',
+            transition: 'all 0.2s',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
           }}
-          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
+            e.currentTarget.style.color = '#fff';
+            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
+            e.currentTarget.style.color = '#999';
+            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+          }}
         >
           {isMobile ? (
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
