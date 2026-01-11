@@ -313,6 +313,33 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
                   <span>View member-only content</span>
                 </div>
               </div>
+
+              {/* Download desktop app button */}
+              <a
+                href="https://github.com/olievans123/Bilibili-EN/releases/latest"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  marginTop: '16px',
+                  padding: '12px 20px',
+                  borderRadius: '12px',
+                  background: 'linear-gradient(135deg, #00a1d6 0%, #00b5e2 100%)',
+                  color: '#fff',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                  boxShadow: '0 4px 12px rgba(0, 161, 214, 0.3)',
+                }}
+              >
+                <svg style={{ width: '16px', height: '16px' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Download Desktop App
+              </a>
             </div>
           ) : error ? (
             <div style={{
