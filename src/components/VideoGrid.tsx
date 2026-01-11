@@ -17,9 +17,9 @@ export function VideoGrid({ videos, loading, onVideoSelect, onFavorite, isFavori
   const gridStyle = {
     display: 'grid',
     gridTemplateColumns: isMobile
-      ? 'repeat(auto-fill, minmax(150px, 1fr))'
+      ? 'repeat(2, 1fr)'
       : 'repeat(auto-fill, minmax(280px, 1fr))',
-    gap: isMobile ? '12px' : '20px',
+    gap: isMobile ? '10px' : '20px',
   };
 
   if (loading) {
