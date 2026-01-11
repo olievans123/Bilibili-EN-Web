@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef, type ReactNode } from 'react'
 import type { BiliVideo, BiliComment } from '../types/bilibili';
 import type { PlaylistContext } from './PlaylistPanel';
 import { LoginModal } from './LoginModal';
+import { useIsMobile } from '../hooks/useMediaQuery';
 import { getVideoComments, getVideoUrl, getRelatedVideos, formatDuration, getChannelUrl } from '../services/bilibili';
 import { translateToEnglish } from '../services/translate';
 
@@ -41,6 +42,7 @@ interface VideoPlayerProps {
 const COMMENTS_PAGE_SIZE = 20;
 
 export function VideoPlayer({ video, onClose, onAddToPlaylist, onWatched, onFavorite, isFavorited, isLoggedIn = false, onVideoChange, playlistContext, onPlayNext, translateTitles = true, translateDescriptions = true, translateComments = true, translateChannelNames = true }: VideoPlayerProps) {
+  const isMobile = useIsMobile();
   const [comments, setComments] = useState<BiliComment[]>([]);
   const [loadingComments, setLoadingComments] = useState(true);
   const [loadingMoreComments, setLoadingMoreComments] = useState(false);
@@ -410,9 +412,10 @@ export function VideoPlayer({ video, onClose, onAddToPlaylist, onWatched, onFavo
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '16px 24px',
+          padding: isMobile ? '12px' : '16px 24px',
           borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
           flexShrink: 0,
+          gap: isMobile ? '8px' : '16px',
         }}>
           {/* Back button */}
           <button
@@ -420,8 +423,8 @@ export function VideoPlayer({ video, onClose, onAddToPlaylist, onWatched, onFavo
             style={{
               background: 'rgba(255, 255, 255, 0.1)',
               border: 'none',
-              borderRadius: '10px',
-              padding: '10px 16px',
+              borderRadius: isMobile ? '8px' : '10px',
+              padding: isMobile ? '8px' : '10px 16px',
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
@@ -431,40 +434,36 @@ export function VideoPlayer({ video, onClose, onAddToPlaylist, onWatched, onFavo
               fontWeight: 500,
               transition: 'all 0.2s',
             }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-            }}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>
-            Back
+            {!isMobile && 'Back'}
           </button>
 
           <div style={{ flex: 1 }} />
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {/* Keyboard shortcuts button */}
-            <button
-              onClick={() => setShowShortcuts(true)}
-              style={{
-                background: 'rgba(255, 255, 255, 0.1)',
-                border: 'none',
-                borderRadius: '8px',
-                padding: '8px',
-                cursor: 'pointer',
-                color: '#888',
-                fontSize: '13px',
-              }}
-              title="Keyboard shortcuts (?)"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="2" y="4" width="20" height="16" rx="2" />
-                <path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M6 12h.01M18 12h.01M8 16h8" />
-              </svg>
-            </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '6px' : '8px' }}>
+            {/* Keyboard shortcuts button - hidden on mobile */}
+            {!isMobile && (
+              <button
+                onClick={() => setShowShortcuts(true)}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '8px',
+                  cursor: 'pointer',
+                  color: '#888',
+                  fontSize: '13px',
+                }}
+                title="Keyboard shortcuts (?)"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="2" y="4" width="20" height="16" rx="2" />
+                  <path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M6 12h.01M18 12h.01M8 16h8" />
+                </svg>
+              </button>
+            )}
 
             <button
               onClick={handleShare}
@@ -472,7 +471,7 @@ export function VideoPlayer({ video, onClose, onAddToPlaylist, onWatched, onFavo
                 background: 'rgba(255, 255, 255, 0.1)',
                 border: '1px solid rgba(255, 255, 255, 0.2)',
                 borderRadius: '8px',
-                padding: '8px 16px',
+                padding: isMobile ? '8px' : '8px 16px',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
@@ -480,13 +479,6 @@ export function VideoPlayer({ video, onClose, onAddToPlaylist, onWatched, onFavo
                 color: '#fff',
                 fontSize: '13px',
                 fontWeight: 500,
-                transition: 'all 0.2s',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
               }}
               title="Copy link"
             >
@@ -495,7 +487,7 @@ export function VideoPlayer({ video, onClose, onAddToPlaylist, onWatched, onFavo
                 <polyline points="16 6 12 2 8 6" />
                 <line x1="12" y1="2" x2="12" y2="15" />
               </svg>
-              Share
+              {!isMobile && 'Share'}
             </button>
 
             {/* Sign in button */}
@@ -505,7 +497,7 @@ export function VideoPlayer({ video, onClose, onAddToPlaylist, onWatched, onFavo
                 background: 'rgba(251, 114, 153, 0.2)',
                 border: '1px solid rgba(251, 114, 153, 0.4)',
                 borderRadius: '8px',
-                padding: '8px 16px',
+                padding: isMobile ? '8px' : '8px 16px',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
@@ -520,7 +512,7 @@ export function VideoPlayer({ video, onClose, onAddToPlaylist, onWatched, onFavo
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                 <circle cx="12" cy="7" r="4" />
               </svg>
-              Sign in
+              {!isMobile && 'Sign in'}
             </button>
 
             {/* Desktop app link */}
@@ -532,7 +524,7 @@ export function VideoPlayer({ video, onClose, onAddToPlaylist, onWatched, onFavo
                 background: 'rgba(34, 197, 94, 0.2)',
                 border: '1px solid rgba(34, 197, 94, 0.4)',
                 borderRadius: '8px',
-                padding: '8px 16px',
+                padding: isMobile ? '8px' : '8px 16px',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
@@ -546,7 +538,7 @@ export function VideoPlayer({ video, onClose, onAddToPlaylist, onWatched, onFavo
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
               </svg>
-              Get Desktop App
+              {!isMobile && 'Get Desktop App'}
             </a>
 
           </div>
@@ -564,18 +556,20 @@ export function VideoPlayer({ video, onClose, onAddToPlaylist, onWatched, onFavo
       <div style={{
         flex: 1,
         display: 'flex',
-        overflow: 'hidden',
-        gap: isVideoFullscreen ? 0 : '16px',
-        padding: isVideoFullscreen ? 0 : '16px',
+        flexDirection: isMobile ? 'column' : 'row',
+        overflow: isMobile ? 'auto' : 'hidden',
+        gap: isVideoFullscreen ? 0 : (isMobile ? '0' : '16px'),
+        padding: isVideoFullscreen ? 0 : (isMobile ? '0' : '16px'),
         justifyContent: isVideoFullscreen ? 'stretch' : 'center',
       }}>
         {/* Video section */}
         <div style={{
-          flex: '1 1 auto',
+          flex: isMobile ? 'none' : '1 1 auto',
           display: 'flex',
           flexDirection: 'column',
           minWidth: 0,
-          maxWidth: isVideoFullscreen ? 'none' : '900px',
+          maxWidth: isVideoFullscreen ? 'none' : (isMobile ? 'none' : '900px'),
+          width: isMobile ? '100%' : 'auto',
         }}>
           <div
           ref={playerContainerRef}
@@ -585,7 +579,7 @@ export function VideoPlayer({ video, onClose, onAddToPlaylist, onWatched, onFavo
             background: '#000',
             overflow: 'hidden',
             position: 'relative',
-            borderRadius: isVideoFullscreen ? '0' : '12px',
+            borderRadius: (isVideoFullscreen || isMobile) ? '0' : '12px',
             ...(isVideoFullscreen
               ? { flex: 1, height: '100%' }
               : { aspectRatio: '16/9' }),
@@ -781,15 +775,15 @@ export function VideoPlayer({ video, onClose, onAddToPlaylist, onWatched, onFavo
           {/* Video Info - YouTube style */}
           {!isVideoFullscreen && (
             <div style={{
-              marginTop: '16px',
+              marginTop: isMobile ? '0' : '16px',
               background: 'rgba(255, 255, 255, 0.03)',
-              borderRadius: '12px',
-              padding: '16px',
+              borderRadius: isMobile ? '0' : '12px',
+              padding: isMobile ? '12px' : '16px',
             }}>
             {/* Title */}
             <h2 style={{
               margin: '0 0 12px 0',
-              fontSize: '18px',
+              fontSize: isMobile ? '15px' : '18px',
               fontWeight: 600,
               color: '#fff',
               lineHeight: 1.4,
@@ -988,12 +982,14 @@ export function VideoPlayer({ video, onClose, onAddToPlaylist, onWatched, onFavo
         {/* Sidebar with tabs (Comments / Related) */}
         {!isVideoFullscreen && (
           <div style={{
-            flex: '0 0 400px',
+            flex: isMobile ? 'none' : '0 0 400px',
+            width: isMobile ? '100%' : 'auto',
             display: 'flex',
             flexDirection: 'column',
             background: 'rgba(255, 255, 255, 0.03)',
-            borderRadius: '12px',
+            borderRadius: isMobile ? '0' : '12px',
             overflow: 'hidden',
+            minHeight: isMobile ? '300px' : 'auto',
           }}>
           {/* Tab header */}
           <div style={{
