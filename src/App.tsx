@@ -456,7 +456,10 @@ function App() {
     loadTrending(1);
   }, [loadTrending]);
 
-  // Infinite scroll
+  // Infinite scroll - use ref for page to avoid stale closure issues
+  const pageRef = useRef(page);
+  pageRef.current = page;
+
   useEffect(() => {
     const handleScroll = () => {
       if (pendingCountRef.current > 0 || !hasMore) return;
@@ -465,8 +468,9 @@ function App() {
       const scrollTop = document.documentElement.scrollTop;
       const clientHeight = document.documentElement.clientHeight;
 
-      if (scrollTop + clientHeight >= scrollHeight - 500) {
-        const nextPage = page + 1;
+      // Trigger load when within 800px of bottom (more aggressive)
+      if (scrollTop + clientHeight >= scrollHeight - 800) {
+        const nextPage = pageRef.current + 1;
         setPage(nextPage);
 
         if (viewMode === 'home') {
@@ -481,7 +485,7 @@ function App() {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [page, viewMode, selectedCategory, searchQuery, searchFilters, hasMore, loadTrending, loadCategory, loadSearch]);
+  }, [viewMode, selectedCategory, searchQuery, searchFilters, hasMore, loadTrending, loadCategory, loadSearch]);
 
   const getCategoryName = () => {
     const cat = CATEGORIES.find(c => c.tid === selectedCategory);
@@ -528,7 +532,7 @@ function App() {
             </>
           ) : (
             <>
-              <PageHeader title="Trending Now" />
+              <PageHeader title="Home" />
               <QuickCategories selected={selectedCategory} onSelect={handleCategorySelect} />
             </>
           )}
@@ -1010,59 +1014,6 @@ function App() {
               padding: '0 4px',
             }}>
               {favorites.length > 99 ? '99+' : favorites.length}
-            </span>
-          )}
-        </button>
-
-        {/* Subscriptions FAB */}
-        <button
-          onClick={() => setShowSubscriptionsPanel(true)}
-          style={{
-            width: '48px',
-            height: '48px',
-            borderRadius: '14px',
-            background: 'rgba(0, 161, 214, 0.1)',
-            border: '1px solid rgba(0, 161, 214, 0.2)',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#00a1d6',
-            transition: 'all 0.2s',
-            position: 'relative',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(0, 161, 214, 0.2)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(0, 161, 214, 0.1)';
-          }}
-          title="Subscriptions"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-            <circle cx="8.5" cy="7" r="4" />
-            <line x1="20" y1="8" x2="20" y2="14" />
-            <line x1="23" y1="11" x2="17" y2="11" />
-          </svg>
-          {subscriptions.length > 0 && (
-            <span style={{
-              position: 'absolute',
-              top: '-4px',
-              right: '-4px',
-              background: '#00a1d6',
-              color: '#fff',
-              fontSize: '10px',
-              fontWeight: 600,
-              minWidth: '18px',
-              height: '18px',
-              borderRadius: '9px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '0 4px',
-            }}>
-              {subscriptions.length > 99 ? '99+' : subscriptions.length}
             </span>
           )}
         </button>
