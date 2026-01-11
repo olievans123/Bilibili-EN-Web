@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { SearchBar } from './SearchBar';
-import { LoginModal } from './LoginModal';
 import type { BiliUser } from '../types/bilibili';
 
 interface HeaderProps {
@@ -11,8 +10,7 @@ interface HeaderProps {
   onLogoClick?: () => void;
 }
 
-export function Header({ user, onSearch, onLogout, onLoginSuccess, onLogoClick }: HeaderProps) {
-  const [showLoginModal, setShowLoginModal] = useState(false);
+export function Header({ user, onSearch, onLogout, onLogoClick }: HeaderProps) {
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   return (
@@ -147,43 +145,45 @@ export function Header({ user, onSearch, onLogout, onLoginSuccess, onLogoClick }
                 )}
               </div>
             ) : (
-              <button
-                onClick={() => setShowLoginModal(true)}
+              <a
+                href="https://github.com/olievans123/Bilibili-EN/releases/latest"
+                target="_blank"
+                rel="noopener noreferrer"
                 style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
                   padding: '10px 20px',
-                  background: 'linear-gradient(135deg, #fb7299 0%, #ff9a9e 100%)',
+                  background: 'linear-gradient(135deg, #00a1d6 0%, #00b5e5 100%)',
                   color: '#fff',
                   fontSize: '14px',
                   fontWeight: 600,
                   borderRadius: '20px',
                   border: 'none',
                   cursor: 'pointer',
+                  textDecoration: 'none',
                   transition: 'transform 0.2s, box-shadow 0.2s',
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'scale(1.05)';
-                  e.currentTarget.style.boxShadow = '0 4px 20px rgba(251, 114, 153, 0.4)';
+                  e.currentTarget.style.boxShadow = '0 4px 20px rgba(0, 161, 214, 0.4)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'scale(1)';
                   e.currentTarget.style.boxShadow = 'none';
                 }}
               >
-                Sign in
-              </button>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                Get Desktop App
+              </a>
             )}
           </div>
         </div>
       </header>
-
-      <LoginModal
-        isOpen={showLoginModal}
-        onClose={() => setShowLoginModal(false)}
-        onLoginSuccess={() => {
-          setShowLoginModal(false);
-          onLoginSuccess();
-        }}
-      />
     </>
   );
 }
