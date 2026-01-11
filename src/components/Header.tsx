@@ -150,33 +150,22 @@ export function Header({ user, onSearch, onLogout, onLogoClick }: HeaderProps) {
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
+                  background: 'rgba(34, 197, 94, 0.2)',
+                  border: '1px solid rgba(34, 197, 94, 0.4)',
+                  borderRadius: '8px',
+                  padding: '8px 16px',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
-                  padding: '10px 20px',
-                  background: 'linear-gradient(135deg, #00a1d6 0%, #00b5e5 100%)',
-                  color: '#fff',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  borderRadius: '20px',
-                  border: 'none',
-                  cursor: 'pointer',
+                  color: '#22c55e',
+                  fontSize: '13px',
+                  fontWeight: 500,
                   textDecoration: 'none',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'scale(1.05)';
-                  e.currentTarget.style.boxShadow = '0 4px 20px rgba(0, 161, 214, 0.4)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'scale(1)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
+                title="Download desktop app for more features"
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="7 10 12 15 17 10" />
-                  <line x1="12" y1="15" x2="12" y2="3" />
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
                 </svg>
                 Get Desktop App
               </a>
