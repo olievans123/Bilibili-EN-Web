@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { open } from '@tauri-apps/plugin-shell';
 import type { BiliVideo } from '../types/bilibili';
 import { formatDuration, formatViewCount, getVideoUrl, getChannelUrl } from '../services/bilibili';
+import { useIsMobile } from '../hooks/useMediaQuery';
 
 interface VideoCardProps {
   video: BiliVideo;
@@ -23,6 +24,7 @@ function proxyImageUrl(url: string): string {
 export function VideoCard({ video, onVideoSelect, onFavorite, isFavorited, translateTitle = true, translateChannelName = true }: VideoCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const isMobile = useIsMobile();
 
   const handleClick = async () => {
     if (onVideoSelect) {
@@ -49,14 +51,14 @@ export function VideoCard({ video, onVideoSelect, onFavorite, isFavorited, trans
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       style={{
-        borderRadius: '16px',
+        borderRadius: isMobile ? '12px' : '16px',
         overflow: 'hidden',
         background: 'rgba(255, 255, 255, 0.03)',
         border: '1px solid rgba(255, 255, 255, 0.06)',
         cursor: 'pointer',
-        transition: 'all 0.3s ease',
-        transform: isHovered ? 'translateY(-6px)' : 'translateY(0)',
-        boxShadow: isHovered
+        transition: isMobile ? 'none' : 'all 0.3s ease',
+        transform: !isMobile && isHovered ? 'translateY(-6px)' : 'translateY(0)',
+        boxShadow: !isMobile && isHovered
           ? '0 20px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1)'
           : '0 4px 12px rgba(0, 0, 0, 0.2)',
       }}
@@ -110,14 +112,14 @@ export function VideoCard({ video, onVideoSelect, onFavorite, isFavorited, trans
         {/* Duration badge */}
         <div style={{
           position: 'absolute',
-          bottom: '8px',
-          right: '8px',
-          padding: '4px 8px',
+          bottom: isMobile ? '6px' : '8px',
+          right: isMobile ? '6px' : '8px',
+          padding: isMobile ? '2px 6px' : '4px 8px',
           background: 'rgba(0, 0, 0, 0.85)',
           color: '#fff',
-          fontSize: '12px',
+          fontSize: isMobile ? '10px' : '12px',
           fontWeight: 600,
-          borderRadius: '6px',
+          borderRadius: isMobile ? '4px' : '6px',
           fontFamily: 'SF Mono, monospace',
         }}>
           {formatDuration(video.duration)}
@@ -163,89 +165,93 @@ export function VideoCard({ video, onVideoSelect, onFavorite, isFavorited, trans
 
       {/* Content */}
       <div style={{
-        padding: '14px',
+        padding: isMobile ? '10px' : '14px',
         display: 'flex',
         flexDirection: 'column',
-        minHeight: '130px', // Minimum height, allows growth for dual titles
+        minHeight: isMobile ? '80px' : '130px',
       }}>
         {/* Title */}
         <h3 style={{
           fontWeight: 600,
           color: '#fff',
-          fontSize: '14px',
-          lineHeight: 1.5,
-          marginBottom: '6px',
+          fontSize: isMobile ? '12px' : '14px',
+          lineHeight: 1.4,
+          marginBottom: isMobile ? '4px' : '6px',
           display: '-webkit-box',
           WebkitLineClamp: 2,
           WebkitBoxOrient: 'vertical',
           overflow: 'hidden',
           transition: 'color 0.2s',
-          minHeight: '42px', // Min height for 2 lines (14px * 1.5 * 2)
-          ...(isHovered ? { color: '#00a1d6' } : {}),
+          minHeight: isMobile ? '34px' : '42px',
+          ...(!isMobile && isHovered ? { color: '#00a1d6' } : {}),
         }}>
           {displayTitle}
         </h3>
 
-        {/* Channel */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            marginBottom: '8px',
-            cursor: 'pointer',
-          }}
-          onClick={(event) => {
-            event.stopPropagation();
-            window.open(getChannelUrl(video.owner.mid), '_blank');
-          }}
-        >
-          {video.owner.face && (
-            <img
-              src={proxyImageUrl(video.owner.face)}
-              alt={video.owner.name}
-              style={{
-                width: '22px',
-                height: '22px',
-                borderRadius: '50%',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-              }}
-              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-            />
-          )}
-          <span style={{
-            fontSize: '13px',
-            color: '#888',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}>
-            {displayChannelName}
-          </span>
-        </div>
+        {/* Channel - hidden on mobile to save space */}
+        {!isMobile && (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              marginBottom: '8px',
+              cursor: 'pointer',
+            }}
+            onClick={(event) => {
+              event.stopPropagation();
+              window.open(getChannelUrl(video.owner.mid), '_blank');
+            }}
+          >
+            {video.owner.face && (
+              <img
+                src={proxyImageUrl(video.owner.face)}
+                alt={video.owner.name}
+                style={{
+                  width: '22px',
+                  height: '22px',
+                  borderRadius: '50%',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                }}
+                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+              />
+            )}
+            <span style={{
+              fontSize: '13px',
+              color: '#888',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}>
+              {displayChannelName}
+            </span>
+          </div>
+        )}
 
         {/* Stats - pushed to bottom */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '12px',
-          fontSize: '12px',
+          gap: isMobile ? '8px' : '12px',
+          fontSize: isMobile ? '10px' : '12px',
           color: '#666',
           marginTop: 'auto',
         }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+            <svg width={isMobile ? '12' : '14'} height={isMobile ? '12' : '14'} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
               <circle cx="12" cy="12" r="3" />
             </svg>
             {formatViewCount(video.view)}
           </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-            </svg>
-            {formatViewCount(video.danmaku)}
-          </span>
+          {!isMobile && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+              {formatViewCount(video.danmaku)}
+            </span>
+          )}
           <span style={{ color: '#555' }}>{timeAgo}</span>
         </div>
       </div>

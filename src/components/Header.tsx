@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { SearchBar } from './SearchBar';
 import { LoginModal } from './LoginModal';
+import { useIsMobile } from '../hooks/useMediaQuery';
 import type { BiliUser } from '../types/bilibili';
 
 interface HeaderProps {
@@ -14,6 +15,7 @@ interface HeaderProps {
 export function Header({ user, onSearch, onLogout, onLoginSuccess, onLogoClick }: HeaderProps) {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const isMobile = useIsMobile();
 
   return (
     <>
@@ -28,12 +30,12 @@ export function Header({ user, onSearch, onLogout, onLoginSuccess, onLogoClick }
         <div style={{
           maxWidth: '1400px',
           margin: '0 auto',
-          padding: '0 24px',
+          padding: isMobile ? '0 12px' : '0 24px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          height: '64px',
-          gap: '24px',
+          height: isMobile ? '56px' : '64px',
+          gap: isMobile ? '8px' : '24px',
         }}>
           {/* Logo */}
           <button
@@ -41,7 +43,6 @@ export function Header({ user, onSearch, onLogout, onLoginSuccess, onLogoClick }
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '0',
               flexShrink: 0,
               background: 'none',
               border: 'none',
@@ -50,24 +51,24 @@ export function Header({ user, onSearch, onLogout, onLoginSuccess, onLogoClick }
             }}
           >
             <span style={{
-              fontSize: '20px',
+              fontSize: isMobile ? '16px' : '20px',
               fontWeight: 700,
               background: 'linear-gradient(135deg, #00a1d6 0%, #fb7299 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               letterSpacing: '-0.5px',
             }}>
-              Bilibili EN
+              {isMobile ? 'Bili EN' : 'Bilibili EN'}
             </span>
           </button>
 
           {/* Search */}
-          <div style={{ flex: 1, display: 'flex', justifyContent: 'center', maxWidth: '600px' }}>
+          <div style={{ flex: 1, display: 'flex', justifyContent: 'center', maxWidth: isMobile ? 'none' : '600px' }}>
             <SearchBar onSearch={onSearch} />
           </div>
 
           {/* User section */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '6px' : '12px', flexShrink: 0 }}>
             {user ? (
               <div style={{ position: 'relative' }}>
                 <button
@@ -75,8 +76,7 @@ export function Header({ user, onSearch, onLogout, onLoginSuccess, onLogoClick }
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '8px',
-                    padding: '6px',
+                    padding: '4px',
                     borderRadius: '50%',
                     background: 'transparent',
                     border: 'none',
@@ -87,8 +87,8 @@ export function Header({ user, onSearch, onLogout, onLoginSuccess, onLogoClick }
                     src={user.face}
                     alt={user.name}
                     style={{
-                      width: '36px',
-                      height: '36px',
+                      width: isMobile ? '32px' : '36px',
+                      height: isMobile ? '32px' : '36px',
                       borderRadius: '50%',
                       border: '2px solid #00a1d6',
                     }}
@@ -137,8 +137,6 @@ export function Header({ user, onSearch, onLogout, onLoginSuccess, onLogoClick }
                           border: 'none',
                           cursor: 'pointer',
                         }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}
-                        onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                       >
                         Sign out
                       </button>
@@ -148,20 +146,24 @@ export function Header({ user, onSearch, onLogout, onLoginSuccess, onLogoClick }
               </div>
             ) : (
               <>
+                {/* Sign in - icon only on mobile */}
                 <button
                   onClick={() => setShowLoginModal(true)}
                   style={{
                     background: 'rgba(251, 114, 153, 0.2)',
                     border: '1px solid rgba(251, 114, 153, 0.4)',
                     borderRadius: '8px',
-                    padding: '8px 16px',
+                    padding: isMobile ? '8px' : '8px 16px',
                     display: 'flex',
                     alignItems: 'center',
+                    justifyContent: 'center',
                     gap: '6px',
                     color: '#fb7299',
                     fontSize: '13px',
                     fontWeight: 500,
                     cursor: 'pointer',
+                    minWidth: isMobile ? '36px' : 'auto',
+                    minHeight: '36px',
                   }}
                   title="Sign in to Bilibili"
                 >
@@ -169,8 +171,9 @@ export function Header({ user, onSearch, onLogout, onLoginSuccess, onLogoClick }
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                     <circle cx="12" cy="7" r="4" />
                   </svg>
-                  Sign in
+                  {!isMobile && 'Sign in'}
                 </button>
+                {/* Download - icon only on mobile */}
                 <a
                   href="https://github.com/olievans123/Bilibili-EN/releases/latest"
                   target="_blank"
@@ -179,21 +182,24 @@ export function Header({ user, onSearch, onLogout, onLoginSuccess, onLogoClick }
                     background: 'rgba(34, 197, 94, 0.2)',
                     border: '1px solid rgba(34, 197, 94, 0.4)',
                     borderRadius: '8px',
-                    padding: '8px 16px',
+                    padding: isMobile ? '8px' : '8px 16px',
                     display: 'flex',
                     alignItems: 'center',
+                    justifyContent: 'center',
                     gap: '6px',
                     color: '#22c55e',
                     fontSize: '13px',
                     fontWeight: 500,
                     textDecoration: 'none',
+                    minWidth: isMobile ? '36px' : 'auto',
+                    minHeight: '36px',
                   }}
                   title="Download desktop app for more features"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
                   </svg>
-                  Get Desktop App
+                  {!isMobile && 'Get Desktop App'}
                 </a>
               </>
             )}

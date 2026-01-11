@@ -1,5 +1,6 @@
 import type { BiliVideo } from '../types/bilibili';
 import { VideoCard } from './VideoCard';
+import { useIsMobile } from '../hooks/useMediaQuery';
 
 interface VideoGridProps {
   videos: BiliVideo[];
@@ -12,15 +13,20 @@ interface VideoGridProps {
 }
 
 export function VideoGrid({ videos, loading, onVideoSelect, onFavorite, isFavorited, translateTitles = true, translateChannelNames = true }: VideoGridProps) {
+  const isMobile = useIsMobile();
+  const gridStyle = {
+    display: 'grid',
+    gridTemplateColumns: isMobile
+      ? 'repeat(auto-fill, minmax(150px, 1fr))'
+      : 'repeat(auto-fill, minmax(280px, 1fr))',
+    gap: isMobile ? '12px' : '20px',
+  };
+
   if (loading) {
     return (
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-        gap: '20px',
-      }}>
-        {Array.from({ length: 12 }).map((_, i) => (
-          <VideoCardSkeleton key={i} index={i} />
+      <div style={gridStyle}>
+        {Array.from({ length: isMobile ? 6 : 12 }).map((_, i) => (
+          <VideoCardSkeleton key={i} index={i} isMobile={isMobile} />
         ))}
       </div>
     );
@@ -32,11 +38,7 @@ export function VideoGrid({ videos, loading, onVideoSelect, onFavorite, isFavori
   }
 
   return (
-    <div style={{
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-      gap: '20px',
-    }}>
+    <div style={gridStyle}>
       {videos.map((video, index) => (
         <div
           key={video.bvid}
@@ -58,10 +60,10 @@ export function VideoGrid({ videos, loading, onVideoSelect, onFavorite, isFavori
   );
 }
 
-function VideoCardSkeleton({ index }: { index: number }) {
+function VideoCardSkeleton({ index, isMobile }: { index: number; isMobile: boolean }) {
   return (
     <div style={{
-      borderRadius: '16px',
+      borderRadius: isMobile ? '12px' : '16px',
       overflow: 'hidden',
       background: 'rgba(255, 255, 255, 0.03)',
       border: '1px solid rgba(255, 255, 255, 0.06)',
@@ -73,22 +75,22 @@ function VideoCardSkeleton({ index }: { index: number }) {
         backgroundSize: '200% 100%',
         animation: 'shimmer 1.5s infinite',
       }} />
-      <div style={{ padding: '14px' }}>
+      <div style={{ padding: isMobile ? '10px' : '14px' }}>
         <div style={{
-          height: '14px',
+          height: isMobile ? '12px' : '14px',
           background: 'rgba(255, 255, 255, 0.08)',
           borderRadius: '6px',
-          marginBottom: '10px',
+          marginBottom: isMobile ? '8px' : '10px',
         }} />
         <div style={{
-          height: '14px',
+          height: isMobile ? '12px' : '14px',
           background: 'rgba(255, 255, 255, 0.05)',
           borderRadius: '6px',
           width: '70%',
-          marginBottom: '12px',
+          marginBottom: isMobile ? '8px' : '12px',
         }} />
         <div style={{
-          height: '12px',
+          height: isMobile ? '10px' : '12px',
           background: 'rgba(255, 255, 255, 0.04)',
           borderRadius: '4px',
           width: '50%',

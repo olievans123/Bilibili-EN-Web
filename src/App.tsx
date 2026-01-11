@@ -15,6 +15,7 @@ import { useHistory } from './hooks/useHistory';
 import { useFavorites } from './hooks/useFavorites';
 import { useSettings } from './hooks/useSettings';
 import { useSubscriptions } from './hooks/useSubscriptions';
+import { useIsMobile } from './hooks/useMediaQuery';
 import { getTrending, searchVideos, getVideosByCategory, type SearchFilters } from './services/bilibili';
 import { SearchFiltersBar } from './components/SearchFilters';
 import type { BiliVideo } from './types/bilibili';
@@ -226,6 +227,7 @@ function QuickCategories({ selected, onSelect }: { selected: number; onSelect: (
 }
 
 function App() {
+  const isMobile = useIsMobile();
   const { user, logout, refreshAuth, isLoggedIn } = useAuth();
   const {
     playlists,
@@ -501,7 +503,7 @@ function App() {
       <main style={{
         maxWidth: '1400px',
         margin: '0 auto',
-        padding: '24px',
+        padding: isMobile ? '12px' : '24px',
       }}>
         {/* Page header - consistent across all views */}
         <div style={{ marginBottom: '24px' }} key={viewMode}>
@@ -870,20 +872,20 @@ function App() {
       {/* FAB Buttons */}
       <div style={{
         position: 'fixed',
-        bottom: '24px',
-        right: '24px',
+        bottom: isMobile ? '16px' : '24px',
+        right: isMobile ? '12px' : '24px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '12px',
+        gap: isMobile ? '8px' : '12px',
         zIndex: 100,
       }}>
         {/* Settings FAB */}
         <button
           onClick={() => setShowSettingsPanel(true)}
           style={{
-            width: '48px',
-            height: '48px',
-            borderRadius: '14px',
+            width: isMobile ? '40px' : '48px',
+            height: isMobile ? '40px' : '48px',
+            borderRadius: isMobile ? '12px' : '14px',
             background: 'rgba(255, 255, 255, 0.1)',
             border: '1px solid rgba(255, 255, 255, 0.1)',
             cursor: 'pointer',
@@ -913,9 +915,9 @@ function App() {
         <button
           onClick={() => setShowHistoryPanel(true)}
           style={{
-            width: '48px',
-            height: '48px',
-            borderRadius: '14px',
+            width: isMobile ? '40px' : '48px',
+            height: isMobile ? '40px' : '48px',
+            borderRadius: isMobile ? '12px' : '14px',
             background: 'rgba(255, 255, 255, 0.1)',
             border: '1px solid rgba(255, 255, 255, 0.1)',
             cursor: 'pointer',
@@ -946,9 +948,9 @@ function App() {
         <button
           onClick={() => setShowFavoritesPanel(true)}
           style={{
-            width: '48px',
-            height: '48px',
-            borderRadius: '14px',
+            width: isMobile ? '40px' : '48px',
+            height: isMobile ? '40px' : '48px',
+            borderRadius: isMobile ? '12px' : '14px',
             background: 'rgba(251, 114, 153, 0.1)',
             border: '1px solid rgba(251, 114, 153, 0.2)',
             cursor: 'pointer',
@@ -996,9 +998,9 @@ function App() {
         <button
           onClick={() => setShowPlaylistPanel(true)}
           style={{
-            width: '56px',
-            height: '56px',
-            borderRadius: '16px',
+            width: isMobile ? '48px' : '56px',
+            height: isMobile ? '48px' : '56px',
+            borderRadius: isMobile ? '14px' : '16px',
             background: 'linear-gradient(135deg, #00a1d6 0%, #0088b3 100%)',
             border: 'none',
             cursor: 'pointer',

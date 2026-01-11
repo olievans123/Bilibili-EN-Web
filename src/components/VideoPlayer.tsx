@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
 import type { BiliVideo, BiliComment } from '../types/bilibili';
 import type { PlaylistContext } from './PlaylistPanel';
+import { LoginModal } from './LoginModal';
 import { getVideoComments, getVideoUrl, getRelatedVideos, formatDuration, getChannelUrl } from '../services/bilibili';
 import { translateToEnglish } from '../services/translate';
 
@@ -61,6 +62,9 @@ export function VideoPlayer({ video, onClose, onAddToPlaylist, onWatched, onFavo
 
   // Share toast
   const [showShareToast, setShowShareToast] = useState(false);
+
+  // Login modal
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   // Description
   const [descExpanded, setDescExpanded] = useState(false);
@@ -494,6 +498,31 @@ export function VideoPlayer({ video, onClose, onAddToPlaylist, onWatched, onFavo
               Share
             </button>
 
+            {/* Sign in button */}
+            <button
+              onClick={() => setShowLoginModal(true)}
+              style={{
+                background: 'rgba(251, 114, 153, 0.2)',
+                border: '1px solid rgba(251, 114, 153, 0.4)',
+                borderRadius: '8px',
+                padding: '8px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                color: '#fb7299',
+                fontSize: '13px',
+                fontWeight: 500,
+                cursor: 'pointer',
+              }}
+              title="Sign in to Bilibili"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+              Sign in
+            </button>
+
             {/* Desktop app link */}
             <a
               href="https://github.com/olievans123/Bilibili-EN/releases/latest"
@@ -523,6 +552,13 @@ export function VideoPlayer({ video, onClose, onAddToPlaylist, onWatched, onFavo
           </div>
         </div>
       )}
+
+      {/* Login Modal */}
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onLoginSuccess={() => setShowLoginModal(false)}
+      />
 
       {/* Main content */}
       <div style={{
